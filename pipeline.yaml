@@ -1,0 +1,134 @@
+Description:
+  This template deploys CI/CD Pipelines for the application
+
+Parameters:
+  Project:
+    Type: String
+  Environment:
+    Type: String
+  Repository:
+    Type: String
+  Branch:
+    Type: String
+  LambdaArtifactStoreBucket:
+    Type: String
+  CodeBuildRoleArn:
+    Type: String
+  CodePipelineRoleArn:
+    Type: String
+  CloudFormationLambdaManagerRoleArn:
+    Type: String
+  FunctionName:
+    Type: String
+  GitHubOwner:
+    Type: String
+  GitHubOAuthToken:
+    Type: String
+  BackendServiceBaseURL:
+    Type: String
+
+Resources:
+  # CodeBuild
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${Project}-build-proj"
+      Description: Used to build function from the GitHub Repo
+      ServiceRole: !Ref CodeBuildRoleArn
+      TimeoutInMinutes: 10
+      Source:
+        Type: CODEPIPELINE
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: "aws/codebuild/python:3.7.1"
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: LAMBDA_ARTIFACT_STORE_BUCKET
+            Value: !Ref LambdaArtifactStoreBucket
+      
+
+  # CodePipeline
+  PipelineProject:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${Project}-${Environment}-${FunctionName}-pipeline"
+      RoleArn: !Ref CodePipelineRoleArn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref LambdaArtifactStoreBucket
+      RestartExecutionOnUpdate: true
+      Stages:
+        # Source
+        - Name: Source
+          Actions:
+            - Name: FetchSource
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: "1"
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: LFSource
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref Repository
+                Branch: !Ref Branch
+                OAuthToken: !Ref GitHubOAuthToken
+                PollForSourceChanges: false
+              RunOrder: 1
+        # Build
+        - Name: Build
+          Actions:
+            - Name: BuildFunction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName: !Ref BuildProject
+              InputArtifacts:
+                - Name: LFSource
+              OutputArtifacts:
+                - Name: LFBuild
+              RunOrder: 1
+        # Deploy
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: "1"
+              Configuration:
+                StackName: !Sub "${Project}-${Environment}-${FunctionName}-deploy-stack"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
+                TemplatePath: "LFBuild::output-template.yaml"
+                RoleArn: !Ref LambdaManagerCloudFormationRoleArn
+                ParameterOverrides: !Sub '{"FunctionName": "${FunctionName}", "BackendServiceBaseURL": "${BackendServiceBaseURL}", "Environment": "${Environment}", "Application": "${Project}"}'
+              InputArtifacts:
+                - Name: LFBuild
+              RunOrder: 1
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: !Ref Project
+
+  RepoWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubOAuthToken
+      RegisterWithThirdParty: 'true'
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Ref PipelineProject
+      TargetAction: FetchSource
+      TargetPipelineVersion: !GetAtt PipelineProject.Version
