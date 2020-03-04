@@ -1,0 +1,93 @@
+Description:
+  Root Stack for Function Pipeline
+
+Parameters:
+  Project:
+    Description: Project name to be used in resource naming (e.g. project name)
+    Type: String
+    MinLength: 3
+    MaxLength: 10
+    Default: myFunctionalProject
+    ConstraintDescription: must be between 3 and 10 characters.
+  Environment:
+    Description: An environment name that will be added to resource names
+    Type: String
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    Default: dev
+    ConstraintDescription: must specify 'dev', 'test' or 'prod'.
+  FunctionName:
+    Description: Name of the Lambda Function (e.g. "path-finder")
+    Type: String
+    MinLength: 3
+    MaxLength: 10
+    Default: myFunction
+    ConstraintDescription: must be between 3 and 10 characters.
+  Repository:
+    Description: Github Repository 
+    Type: String
+    AllowedPattern: "^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
+    ConstraintDescription: must be a valid URL.
+  Branch:
+    Description: The branch of the Github repository
+    Type: String
+    Default: master
+  CfnTemplateS3Bucket:
+    Description: The bucket address at which the templates (like these) reside
+    Type: String
+    Default: https://s3.eu-west-1.amazonaws.com/my-cloudformation-templates
+  GitHubOwner:
+    Type: String
+  GitHubOAuthToken:
+    Type: String
+    NoEcho: true
+    MinLength: 40
+    MaxLength: 40
+    AllowedPattern: "[a-z0-9]*"
+  BackendServiceBaseURL:
+    Description: The base URL for the backed service of the function
+    Type: String
+    AllowedPattern: "^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
+    ConstraintDescription: must be a valid URL.
+
+Resources:
+  # Nested Stacks
+  IAM:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join ["/", [ !Ref CfnTemplateS3Bucket, "iam.yaml"]]
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+  Storage:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join ["/", [ !Ref CfnTemplateS3Bucket, "storage.yaml"]]
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        LambdaArtifactStoreBucketName: !Sub "${Project}-${Environment}-build-artifacts"
+  Pipeline:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Join ["/", [ !Ref CfnTemplateS3Bucket, "pipeline.yaml"]]
+      Parameters:
+        Project: !Ref Project
+        Environment: !Ref Environment
+        Branch: !Ref RepositoryBranch
+        GitHubOwner: !Ref GitHubOwner
+        GitHubOAuthToken: !Ref GitHubOAuthToken
+        LambdaArtifactStoreBucket:
+          Fn::GetAtt: [Storage, Outputs.LambdaArtifactStoreBucket]
+        CodeBuildRoleArn:
+          Fn::GetAtt: [IAM, Outputs.CodeBuildRoleArn]
+        CodePipelineRoleArn:
+          Fn::GetAtt: [IAM, Outputs.CodePipelineRoleArn]
+        CloudFormationLambdaManagerRoleArn:
+          Fn::GetAtt: [IAM, Outputs.CloudFormationLambdaManagerRoleArn]
+        # Lambda-specific
+        FunctionName: !Sub "${Project}-${Environment}-{FunctionName}"
+        Repository: !Ref Repository
+        BackendServiceBaseURL: !Ref BackendServiceBaseURL
