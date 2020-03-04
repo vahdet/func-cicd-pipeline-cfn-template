@@ -7,6 +7,10 @@ Put yaml files in some S3 bucket in the same region as you want your resources b
 
 ## Development Notes
 
+### Creating a repository for the function source code
+
+See https://docs.aws.amazon.com/lambda/latest/dg/build-pipeline.html#setup-repository
+
 ### Testing validity of templates 
 
 Having AWS CLI installed the following command can be run for a file.
