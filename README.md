@@ -5,6 +5,16 @@ CloudFormation nested-stack templates for generic Python Lambda functions (i.e. 
 
 Put yaml files in some S3 bucket in the same region as you want your resources be created in.
 
+## Development Notes
+
+### Testing validity of templates 
+
+Having AWS CLI installed the following command can be run for a file.
+
+```
+aws cloudformation validate-template --template-body file://{yaml_file_name}
+```
+
 ## References
 
 - [CodePipeline Action Configuration keys](https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html#structure-configuration-examples)
