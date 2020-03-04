@@ -1,0 +1,48 @@
+Description:
+  This template deploys buckets for the application
+
+Parameters:
+  Project:
+    Type: String
+  Environment:
+    Type: String
+  LambdaArtifactStoreBucketName:
+    Type: String
+
+Resources:
+  # Buckets
+  LambdaArtifactStoreBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      BucketName: !Ref LambdaArtifactStoreBucketName
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: !Ref Project
+      VersioningConfiguration:
+        Status: Enabled
+
+  # Policies
+  LambdaArtifactStoreBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref LambdaArtifactStoreBucket
+      PolicyDocument:
+        Statement:
+          - Sid: DenyInsecureConnections
+            Effect: Deny
+            Action:
+              - "s3:*"
+            Resource: !Join [ "", [ !GetAtt LambdaArtifactStoreBucket.Arn, "/*" ] ]
+            Principal: "*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
+
+Outputs:
+  LambdaArtifactStoreBucket:
+    Description: A reference to the created Lambda Artifact Store Bucket
+    Value: !Ref LambdaArtifactStoreBucket
