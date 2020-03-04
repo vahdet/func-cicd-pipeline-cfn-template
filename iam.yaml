@@ -1,0 +1,134 @@
+Description:
+  This template deploys IAM roles for the application
+
+Parameters:
+  Project:
+    Type: String
+  Environment:
+    Type: String
+
+Resources:
+  CloudFormationLambdaManagerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - "cloudformation.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Sub "${Project}-${Environment}-cfn-lambda-mgr-role"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "cloudformation:*"
+                  - "iam:*"
+                  - "lambda:*"
+                Resource: "*"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - "codebuild.amazonaws.com"
+          Action:
+          - "sts:AssumeRole"
+      Policies:
+      - PolicyName: !Sub "${Project}-${Environment}-codebuild-policy"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "*"
+          - Effect: Allow
+            Action: "codecommit:GitPull"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "s3:GetObject"
+              - "s3:GetObjectVersion"
+            Resource: "*"
+          - Effect: "Allow"
+            Action: "s3:PutObject"
+            Resource: "*"
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: /
+      Policies:
+        - PolicyName: !Sub "${Project}-${Environment}-codepipeline-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "codecommit:CancelUploadArchive"
+                  - "codecommit:GetBranch"
+                  - "codecommit:GetCommit"
+                  - "codecommit:GetUploadArchiveStatus"
+                  - "codecommit:UploadArchive"
+                  - "codedeploy:CreateDeployment"
+                  - "codedeploy:GetApplicationRevision"
+                  - "codedeploy:GetDeployment"
+                  - "codedeploy:GetDeploymentConfig"
+                  - "codedeploy:RegisterApplicationRevision"
+                  - "codebuild:BatchGetBuilds"
+                  - "codebuild:StartBuild"
+                  - "devicefarm:ListProjects"
+                  - "devicefarm:ListDevicePools"
+                  - "devicefarm:GetRun"
+                  - "devicefarm:GetUpload"
+                  - "devicefarm:CreateUpload"
+                  - "devicefarm:ScheduleRun"
+                  - "lambda:InvokeFunction"
+                  - "lambda:ListFunctions"
+                  - "iam:PassRole"
+                  - "elasticbeanstalk:*"
+                  - "ec2:*"
+                  - "elasticloadbalancing:*"
+                  - "autoscaling:*"
+                  - "cloudwatch:*"
+                  - "s3:*"
+                  - "sns:*"
+                  - "cloudformation:*"
+                  - "rds:*"
+                  - "sqs:*"
+                  - "ecs:*"
+                Resource: "*"
+
+Outputs:
+  CloudFormationLambdaManagerRoleArn:
+    Description: A reference to the created Lambda Managing CloudFormation Role ARN
+    Value: !GetAtt CloudFormationLambdaManagerRole.Arn
+  CodeBuildRoleArn:
+    Description: A reference to the created CodeBuild Role ARN
+    Value: !GetAtt CodeBuildRole.Arn
+  CodePipelineRoleArn:
+    Description: A reference to the created CodePipeline Role ARN
+    Value: !GetAtt CodePipelineRole.Arn
