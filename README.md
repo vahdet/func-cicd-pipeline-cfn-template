@@ -3,7 +3,9 @@ CloudFormation nested-stack templates for generic Python Lambda functions (i.e. 
 
 ## Prerequisites
 
-Put yaml files in some S3 bucket in the same region as you want your resources be created in.
+- Put yaml files in some S3 bucket in the same region as you want your resources be created in.
+
+- Create a repo for your function source-code. An example can be found here: https://github.com/vahdet/python-lambda-template/
 
 ## Development Notes
 
