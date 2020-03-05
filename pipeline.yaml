@@ -109,7 +109,13 @@ Resources:
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
                 TemplatePath: "LFBuild::output-template.yaml"
                 RoleArn: !Ref LambdaManagerCloudFormationRoleArn
-                ParameterOverrides: !Sub '{"FunctionName": "${FunctionName}", "BackendServiceBaseURL": "${BackendServiceBaseURL}", "Environment": "${Environment}", "Application": "${Project}"}'
+                ParameterOverrides: !Sub '
+                  {
+                    "FunctionName": "${FunctionName}",
+                    "BackendServiceBaseURL": "${BackendServiceBaseURL}",
+                    "Environment": "${Environment}",
+                    "Application": "${Project}"
+                  }'
               InputArtifacts:
                 - Name: LFBuild
               RunOrder: 1
