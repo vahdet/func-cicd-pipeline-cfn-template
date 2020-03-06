@@ -108,7 +108,7 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
                 TemplatePath: "LFBuild::output-template.yaml"
-                RoleArn: !Ref LambdaManagerCloudFormationRoleArn
+                RoleArn: !Ref CloudFormationLambdaManagerRoleArn
                 ParameterOverrides: !Sub '
                   {
                     "FunctionName": "${FunctionName}",

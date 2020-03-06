@@ -6,8 +6,8 @@ Parameters:
     Description: Project name to be used in resource naming (e.g. project name)
     Type: String
     MinLength: 3
-    MaxLength: 10
-    Default: myFunctionalProject
+    MaxLength: 16
+    Default: my-func-proj
     ConstraintDescription: must be between 3 and 10 characters.
   Environment:
     Description: An environment name that will be added to resource names
@@ -22,13 +22,14 @@ Parameters:
     Description: Name of the Lambda Function (e.g. "path-finder")
     Type: String
     MinLength: 3
-    MaxLength: 10
-    Default: myFunction
+    MaxLength: 16
+    Default: myFunc
     ConstraintDescription: must be between 3 and 10 characters.
-  Repository:
+  RepositoryURL:
     Description: Github Repository 
     Type: String
-    AllowedPattern: "^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
+    AllowedPattern: "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
+    Default: https://github.com/vahdet/python-lambda-template
     ConstraintDescription: must be a valid URL.
   Branch:
     Description: The branch of the Github repository
@@ -37,7 +38,7 @@ Parameters:
   CfnTemplateS3Bucket:
     Description: The bucket address at which the templates (like these) reside
     Type: String
-    Default: https://s3.eu-west-1.amazonaws.com/my-cloudformation-templates
+    Default: https://s3.{Region}.amazonaws.com/{BucketName}
   GitHubOwner:
     Type: String
   GitHubOAuthToken:
@@ -49,7 +50,7 @@ Parameters:
   BackendServiceBaseURL:
     Description: The base URL for the backed service of the function
     Type: String
-    AllowedPattern: "^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
+    AllowedPattern: "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
     ConstraintDescription: must be a valid URL.
 
 Resources:
@@ -76,7 +77,7 @@ Resources:
       Parameters:
         Project: !Ref Project
         Environment: !Ref Environment
-        Branch: !Ref RepositoryBranch
+        Branch: !Ref Branch
         GitHubOwner: !Ref GitHubOwner
         GitHubOAuthToken: !Ref GitHubOAuthToken
         LambdaArtifactStoreBucket:
@@ -89,5 +90,5 @@ Resources:
           Fn::GetAtt: [IAM, Outputs.CloudFormationLambdaManagerRoleArn]
         # Lambda-specific
         FunctionName: !Sub "${Project}-${Environment}-{FunctionName}"
-        Repository: !Ref Repository
+        Repository: !Ref RepositoryURL
         BackendServiceBaseURL: !Ref BackendServiceBaseURL
