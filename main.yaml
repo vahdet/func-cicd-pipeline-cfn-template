@@ -90,6 +90,6 @@ Resources:
         CloudFormationLambdaManagerRoleArn:
           Fn::GetAtt: [IAM, Outputs.CloudFormationLambdaManagerRoleArn]
         # Lambda-specific
-        FunctionName: !Sub "${Project}-${Environment}-{FunctionName}"
+        FunctionName: !Ref "${Environment}-${FunctionName}"
         Repository: !Ref RepositoryURL
         BackendServiceBaseURL: !Ref BackendServiceBaseURL

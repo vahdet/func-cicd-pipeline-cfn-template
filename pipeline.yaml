@@ -32,7 +32,7 @@ Resources:
   BuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub "${Project}-build-proj"
+      Name: !Sub "${FunctionName}-build-proj"
       Description: Used to build function from the GitHub Repo
       ServiceRole: !Ref CodeBuildRoleArn
       TimeoutInMinutes: 10
@@ -53,7 +53,7 @@ Resources:
   PipelineProject:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: !Sub "${Project}-${Environment}-${FunctionName}-pipeline"
+      Name: !Sub "${FunctionName}-pl-proj"
       RoleArn: !Ref CodePipelineRoleArn
       ArtifactStore:
         Type: S3
@@ -104,7 +104,7 @@ Resources:
                 Provider: CloudFormation
                 Version: "1"
               Configuration:
-                StackName: !Sub "${Project}-${Environment}-${FunctionName}-deploy-stack"
+                StackName: !Sub "${FunctionName}-deploy-stack"
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND
                 TemplatePath: "LFBuild::output-template.yaml"
