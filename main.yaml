@@ -41,6 +41,7 @@ Parameters:
     Default: https://s3.{Region}.amazonaws.com/{BucketName}
   GitHubOwner:
     Type: String
+    Default: vahdet
   GitHubOAuthToken:
     Type: String
     NoEcho: true

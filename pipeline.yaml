@@ -95,9 +95,9 @@ Resources:
                 - Name: LFBuild
               RunOrder: 1
         # Deploy
-        - Name: Deploy
+        - Name: Pipeline
           Actions:
-            - Name: Deploy
+            - Name: DeployPipeline
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -126,7 +126,7 @@ Resources:
           Value: !Ref Project
 
   RepoWebhook:
-    Type: 'AWS::CodePipeline::Webhook'
+    Type: AWS::CodePipeline::Webhook
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
