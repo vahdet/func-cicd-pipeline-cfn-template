@@ -25,11 +25,11 @@ Parameters:
     MaxLength: 16
     Default: myFunc
     ConstraintDescription: must be between 3 and 10 characters.
-  RepositoryURL:
-    Description: Github Repository 
+  Repository:
+    Description: The name of the repository where source changes are to be detected.
     Type: String
     AllowedPattern: "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
-    Default: https://github.com/vahdet/python-lambda-template
+    Default: python-lambda-template
     ConstraintDescription: must be a valid URL.
   Branch:
     Description: The branch of the Github repository
@@ -41,6 +41,7 @@ Parameters:
   GitHubOwner:
     Type: String
     Default: vahdet
+    Description: The name of the GitHub user or organization who owns the GitHub repository.
   GitHubOAuthToken:
     Type: String
     NoEcho: true
@@ -90,5 +91,5 @@ Resources:
           Fn::GetAtt: [IAM, Outputs.CloudFormationLambdaManagerRoleArn]
         # Lambda-specific
         FunctionName: !Sub ${Environment}-${FunctionName}
-        Repository: !Ref RepositoryURL
+        Repository: !Ref Repository
         BackendServiceBaseURL: !Ref BackendServiceBaseURL
