@@ -35,10 +35,9 @@ Parameters:
     Description: The branch of the Github repository
     Type: String
     Default: master
-  CfnTemplateS3Bucket:
-    Description: The bucket address at which the templates (like these) reside
+  CfnTemplateS3BucketName:
+    Description: The bucket name at which the templates (like these) reside
     Type: String
-    Default: https://s3.{Region}.amazonaws.com/{BucketName}
   GitHubOwner:
     Type: String
     Default: vahdet
@@ -59,22 +58,22 @@ Resources:
   IAM:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ["/", [ !Ref CfnTemplateS3Bucket, "iam.yaml"]]
+      TemplateURL: !Sub https://${CfnTemplateS3BucketName}.s3.${AWS::Region}.amazonaws.com/iam.yaml
       Parameters:
         Project: !Ref Project
         Environment: !Ref Environment
   Storage:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ["/", [ !Ref CfnTemplateS3Bucket, "storage.yaml"]]
+      TemplateURL: !Sub https://${CfnTemplateS3BucketName}.s3.${AWS::Region}.amazonaws.com/storage.yaml
       Parameters:
         Project: !Ref Project
         Environment: !Ref Environment
-        LambdaArtifactStoreBucketName: !Sub "${Project}-${Environment}-build-artifacts"
+        LambdaArtifactStoreBucketName: !Sub ${Project}-${Environment}-build-artifacts
   Pipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Join ["/", [ !Ref CfnTemplateS3Bucket, "pipeline.yaml"]]
+      TemplateURL: !Sub https://${CfnTemplateS3BucketName}.s3.${AWS::Region}.amazonaws.com/pipeline.yaml
       Parameters:
         Project: !Ref Project
         Environment: !Ref Environment
@@ -90,6 +89,6 @@ Resources:
         CloudFormationLambdaManagerRoleArn:
           Fn::GetAtt: [IAM, Outputs.CloudFormationLambdaManagerRoleArn]
         # Lambda-specific
-        FunctionName: !Sub "${Environment}-${FunctionName}"
+        FunctionName: !Sub ${Environment}-${FunctionName}
         Repository: !Ref RepositoryURL
         BackendServiceBaseURL: !Ref BackendServiceBaseURL

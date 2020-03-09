@@ -21,11 +21,11 @@ Resources:
             Action:
               - "sts:AssumeRole"
       Policies:
-        - PolicyName: !Sub "${Project}-${Environment}-cfn-lambda-mgr-role"
+        - PolicyName: !Sub ${Project}-${Environment}-cfn-lambda-mgr-role
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-              - Effect: "Allow"
+              - Effect: Allow
                 Action:
                   - "cloudformation:*"
                   - "iam:*"
@@ -65,7 +65,7 @@ Resources:
               - "s3:GetObject"
               - "s3:GetObjectVersion"
             Resource: "*"
-          - Effect: "Allow"
+          - Effect: Allow
             Action: "s3:PutObject"
             Resource: "*"
 
@@ -78,11 +78,11 @@ Resources:
           - Effect: Allow
             Principal:
               Service:
-                - codepipeline.amazonaws.com
+                - "codepipeline.amazonaws.com"
             Action: "sts:AssumeRole"
       Path: /
       Policies:
-        - PolicyName: !Sub "${Project}-${Environment}-codepipeline-policy"
+        - PolicyName: !Sub ${Project}-${Environment}-codepipeline-policy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
