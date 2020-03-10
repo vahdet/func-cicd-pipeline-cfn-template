@@ -28,9 +28,7 @@ Parameters:
   Repository:
     Description: The name of the repository where source changes are to be detected.
     Type: String
-    AllowedPattern: "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
     Default: python-lambda-template
-    ConstraintDescription: must be a valid URL.
   Branch:
     Description: The branch of the Github repository
     Type: String
