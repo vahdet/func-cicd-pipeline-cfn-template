@@ -53,6 +53,20 @@ Parameters:
     ConstraintDescription: must be a valid URL.
 
 Resources:
+
+  # Secrets Manager
+  FunctionGithubOauthTokenSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: FunctionGithubOauthTokenSecret
+      Description: This is a secret for the Github Personal Access Token
+      SecretString: !Sub '{"token":"${GitHubOAuthToken}"}'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: !Ref Project
+
   # Nested Stacks
   IAM:
     Type: AWS::CloudFormation::Stack
@@ -78,7 +92,7 @@ Resources:
         Environment: !Ref Environment
         Branch: !Ref Branch
         GitHubOwner: !Ref GitHubOwner
-        GitHubOAuthToken: !Ref GitHubOAuthToken
+        FunctionGithubOauthTokenSecret: !Ref FunctionGithubOauthTokenSecret
         LambdaArtifactStoreBucket:
           Fn::GetAtt: [Storage, Outputs.LambdaArtifactStoreBucket]
         CodeBuildRoleArn:

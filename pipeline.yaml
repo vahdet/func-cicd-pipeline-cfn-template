@@ -22,7 +22,7 @@ Parameters:
     Type: String
   GitHubOwner:
     Type: String
-  GitHubOAuthToken:
+  FunctionGithubOauthTokenSecret:
     Type: String
   BackendServiceBaseURL:
     Type: String
@@ -75,7 +75,7 @@ Resources:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref Repository
                 Branch: !Ref Branch
-                OAuthToken: !Ref GitHubOAuthToken
+                OAuthToken: !Sub "{{resolve:secretsmanager:${FunctionGithubOauthTokenSecret}:SecretString:token}}"
                 PollForSourceChanges: false
               RunOrder: 1
         # Build
@@ -130,7 +130,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: !Ref GitHubOAuthToken
+        SecretToken: !Sub "{{resolve:secretsmanager:${FunctionGithubOauthTokenSecret}:SecretString:token}}"
       RegisterWithThirdParty: "true"
       Filters:
         - JsonPath: "$.ref"
