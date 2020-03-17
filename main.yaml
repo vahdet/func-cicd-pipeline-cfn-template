@@ -51,16 +51,33 @@ Parameters:
     Type: String
     AllowedPattern: "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
     ConstraintDescription: must be a valid URL.
+  BackendServiceApiKey:
+    Type: String
+    NoEcho: true
+    MinLength: 10
+    MaxLength: 40
+    AllowedPattern: "[a-z0-9]*"
 
 Resources:
 
   # Secrets Manager
   FunctionGithubOauthTokenSecret:
-    Type: 'AWS::SecretsManager::Secret'
+    Type: AWS::SecretsManager::Secret
     Properties:
-      Name: FunctionGithubOauthTokenSecret
+      Name: !Sub '/${Environment}/FunctionGithubOauthTokenSecret'
       Description: This is a secret for the Github Personal Access Token
       SecretString: !Sub '{"token":"${GitHubOAuthToken}"}'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: !Ref Project
+  BackendServiceApiKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '/${Environment}/BackendServiceApiKeySecret'
+      Description: This is the API Key for the backend service to be called by the function
+      SecretString: !Sub '{"key":"${BackendServiceApiKey}"}'
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -105,3 +122,4 @@ Resources:
         FunctionName: !Sub ${Environment}-${FunctionName}
         Repository: !Ref Repository
         BackendServiceBaseURL: !Ref BackendServiceBaseURL
+        BackendServiceApiKeySecretArn: !Ref BackendServiceApiKeySecret
